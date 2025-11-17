@@ -69,7 +69,7 @@ Includes Solow growth modeling, CES demand estimation, wage-gap regressions, syn
 ### 📫 Let’s Connect  
 
 - 📧 **alex.strong76@proton.me**  
-- 💻 [GitHub Profile](https://github.com/alex-strong)  
+- 💻 [GitHub Profile](https://github.com/alexstrong76/alex-strong)  
 - 🌐 [LinkedIn](https://linkedin.com/in/alex-s-b049a4390)  
 
 ---
