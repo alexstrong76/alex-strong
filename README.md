@@ -82,8 +82,8 @@ I’m a huge dog person and love exploring the outdoors with my Great Dane and C
 
 ### 🧩 GitHub Stats  
 
-![Alex's GitHub Stats](https://github-readme-stats.vercel.app/api?username=alex-strong&show_icons=true&theme=default)  
-![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=alex-strong&layout=compact&theme=default)
+![Alex's GitHub Stats](https://github-readme-stats.vercel.app/api?username=alexstrong76&show_icons=true&theme=default)  
+![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=alexstrong76&layout=compact&theme=default)
 
 ---
 
