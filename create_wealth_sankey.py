@@ -63,6 +63,22 @@ def bezier_link(x0: float, y0_top: float, y0_bottom: float, x1: float, y1_top: f
         f"C {x0 + c},{y0_top} {x1 - c},{y1_top} {x1},{y1_top} "
         f"L {x1},{y1_bottom} "
         f"C {x1 - c},{y1_bottom} {x0 + c},{y0_bottom} {x0},{y0_bottom} Z"
+    implied = {}
+    for bracket, share_pct in CPS_HOUSEHOLD_SHARES.items():
+        hh_mn = TOTAL_HOUSEHOLDS_MILLIONS * (share_pct / 100)
+        wealth_t = hh_mn * SCF_MEAN_WEALTH_BY_BRACKET_MUSD[bracket] / 1_000.0
+        implied[bracket] = wealth_t
+    scale = CBO_TOTAL_WEALTH_TRILLIONS / sum(implied.values())
+    return {k: v * scale for k, v in implied.items()}
+
+
+def bezier_link(x0, y0_top, y0_bottom, x1, y1_top, y1_bottom):
+    c = (x1 - x0) * 0.5
+    return (
+        f"M {x0},{y0_top} "
+        f"C {x0+c},{y0_top} {x1-c},{y1_top} {x1},{y1_top} "
+        f"L {x1},{y1_bottom} "
+        f"C {x1-c},{y1_bottom} {x0+c},{y0_bottom} {x0},{y0_bottom} Z"
     )
 
 
@@ -125,6 +141,41 @@ def build_html(out: Path) -> None:
     epsilon = 1e-6
     if abs(left_cursor - (total_y + total_bar_h)) > epsilon:
         raise RuntimeError("Left flow segments do not exactly consume the total bar height.")
+    width, height = 1200, 740
+    margin_top, margin_bottom = 70, 50
+    usable_h = height - margin_top - margin_bottom
+
+    total = sum(wealth.values())
+    left_x, right_x = 180, 850
+    bar_w = 34
+
+    # Left total bar
+    total_bar_h = usable_h
+    total_y = margin_top
+
+    # Right stacked bars and links
+    gap = 8
+    n = len(wealth)
+    total_gap = gap * (n - 1)
+    scale = (usable_h - total_gap) / total
+
+    parts = []
+    current_y = margin_top
+    left_cursor = total_y
+
+    for label, val in wealth.items():
+        h = val * scale
+        right_top = current_y
+        right_bottom = right_top + h
+        left_top = left_cursor
+        left_bottom = left_top + h
+        pct = val / CBO_TOTAL_WEALTH_TRILLIONS * 100
+
+        path = bezier_link(left_x + bar_w, left_top, left_bottom, right_x, right_top, right_bottom)
+        parts.append((label, val, pct, right_top, right_bottom, path))
+
+        current_y = right_bottom + gap
+        left_cursor = left_bottom
 
     svg = [
         f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">',
@@ -134,6 +185,8 @@ def build_html(out: Path) -> None:
         f'<rect x="{left_x}" y="{total_y}" width="{bar_w}" height="{total_bar_h}" fill="#2F5597"/>',
         f'<text x="{left_x - 10}" y="{total_y - 12}" font-family="Arial" font-size="13" text-anchor="start">Total household wealth</text>',
         f'<text x="{left_x - 10}" y="{total_y + 6}" font-family="Arial" font-size="12" fill="#222">$143.0T</text>',
+        f'<text x="{left_x-10}" y="{total_y-12}" font-family="Arial" font-size="13" text-anchor="start">Total household wealth</text>',
+        f'<text x="{left_x-10}" y="{total_y+6}" font-family="Arial" font-size="12" fill="#222">$143.0T</text>',
     ]
 
     colors = ["#6BAED6", "#74C476", "#FD8D3C", "#9E9AC8", "#F768A1", "#BCBD22", "#17BECF"]
@@ -152,6 +205,16 @@ def build_html(out: Path) -> None:
         )
         svg.append(
             f'<text x="{right_x + bar_w + 12}" y="{mid + 14}" font-family="Arial" font-size="11" fill="#333">${p["val"]:.1f}T ({p["pct"]:.1f}%)</text>'
+    for i, (label, val, pct, y0, y1, path) in enumerate(parts):
+        color = colors[i % len(colors)]
+        svg.append(f'<path d="{path}" fill="{color}" fill-opacity="0.45" stroke="none"/>')
+        svg.append(f'<rect x="{right_x}" y="{y0}" width="{bar_w}" height="{max(1, y1-y0)}" fill="{color}"/>')
+        mid = (y0 + y1) / 2
+        svg.append(
+            f'<text x="{right_x + bar_w + 12}" y="{mid - 2}" font-family="Arial" font-size="12">{label}</text>'
+        )
+        svg.append(
+            f'<text x="{right_x + bar_w + 12}" y="{mid + 14}" font-family="Arial" font-size="11" fill="#333">${val:.1f}T ({pct:.1f}%)</text>'
         )
 
     svg.append('</svg>')
