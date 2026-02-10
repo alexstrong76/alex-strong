@@ -1,48 +1,46 @@
 # U.S. Wealth Distribution Sankey (SCF + CPS + CBO)
 
-This repository includes:
+This project generates a Sankey-style HTML chart at:
 
-- Generated diagram: `output/wealth_distribution_sankey.html`
-- Generator script: `create_wealth_sankey.py`
+- `output/wealth_distribution_sankey.html`
 
-## Quick start
+using:
 
-Run the generator as a Python script:
+- `create_wealth_sankey.py`
 
-- `python3 create_wealth_sankey.py`
+## Run instructions
 
-Optional custom output path:
+```bash
+python3 create_wealth_sankey.py
+```
 
-- `python3 create_wealth_sankey.py --output output/wealth_distribution_sankey.html`
+Optional:
 
-> If you see shell errors like `bash: syntax error near unexpected token '('` or `bash: !doctype: event not found`,
-> the script source was pasted directly into bash instead of being executed as a Python file.
+```bash
+python3 create_wealth_sankey.py --output output/wealth_distribution_sankey.html
+```
 
-## Data sources used
+If you see bash parsing errors such as `syntax error near unexpected token '('` or `!doctype: event not found`, you are likely pasting Python source into the shell instead of executing the script file.
 
-1. **Federal Reserve, Survey of Consumer Finances (SCF, 2022)**
-   - Mean net worth inputs (mapped to tax-bracket bins).
-2. **U.S. Census Bureau, Current Population Survey ASEC (2023)**
-   - Household shares by income ranges (consolidated to bracket bins).
-3. **Congressional Budget Office (CBO, 2022 wealth total in recent distributional report)**
-   - Aggregate U.S. household wealth calibration target ($143T).
+## Primary data sources
 
-## Construction method
+1. **Federal Reserve – Survey of Consumer Finances (SCF, 2022)**
+   - Source for mean net worth assumptions by income-aligned groups.
+2. **U.S. Census Bureau – Current Population Survey ASEC (2023)**
+   - Source for household shares by income range.
+3. **Congressional Budget Office – household wealth total (2022)**
+   - Calibration target for total U.S. household wealth.
 
-1. Start with CPS household shares by income range.
-2. Map those ranges to corresponding federal tax bracket bands.
-3. Apply SCF mean net worth assumptions to each mapped bracket.
-4. Compute implied bracket wealth levels.
-5. Scale bracket values so they sum to CBO's aggregate household wealth total.
+## Estimation and rendering approach
 
-## Rendering notes
+1. Household shares from CPS are mapped into tax-bracket-like bins.
+2. Each bin is paired with SCF mean net worth assumptions.
+3. Implied bin wealth totals are computed.
+4. Totals are scaled to match CBO's aggregate wealth benchmark.
+5. Sankey links are rendered with one consistent vertical scale on both sides.
+6. Right-side bin spacing is visual only (`gap`) and does not reduce link thickness.
+7. A runtime mass-conservation guard checks that the left total bar is exactly consumed.
 
-- The script writes a self-contained HTML file with inline SVG.
-- Sankey link thickness uses **one consistent vertical scale** on both source and destination sides.
-- Right-side visual spacing (`gap`) is applied only as separator spacing and does not shrink link thickness.
-- A runtime guard validates that left-side flows exactly consume the full total wealth bar.
+## Caveat
 
-## Interpretation caveat
-
-- Values are calibrated estimates intended for transparent, reproducible visualization.
-- They are not an official government cross-tabulation directly published by tax bracket.
+This is a transparent, reproducible **calibrated estimate** for visualization, not an official direct government cross-tabulation by tax bracket.
