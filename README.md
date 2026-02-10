@@ -26,6 +26,21 @@ My work bridges **academic economics**, **labor market research**, and **data-dr
 
 ---
 
+### Solow Growth Model Demo (Mock Data)
+
+This repo now includes a runnable Solow growth model simulation using synthetic data and two generated figures:
+
+- `outputs/solow_time_paths.svg`: dynamic paths of capital and output (effective units + per worker levels)
+- `outputs/solow_phase_diagram.svg`: phase diagram with investment and break-even curves
+
+Run locally:
+
+```bash
+python solow_growth_mock.py
+```
+
+---
+
 ### Featured Project  
 
 #### [Economics & Analytics Portfolio](https://github.com/alex-strong/alex-strong-econ-analytics-portfolio)
@@ -93,4 +108,3 @@ All projects are open-source under the MIT License.
 For questions, collaborations, or other opportunities, feel free to reach out — I’d love to connect!
 
 ---
-
