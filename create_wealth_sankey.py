@@ -36,6 +36,33 @@ TOTAL_HOUSEHOLDS_MILLIONS = 131.0
 
 
 def wealth_by_bracket() -> dict[str, float]:
+    """Estimate bracket-level wealth and calibrate to CBO aggregate wealth."""
+    if not CPS_HOUSEHOLD_SHARES:
+        raise ValueError("CPS_HOUSEHOLD_SHARES is empty.")
+
+    implied: dict[str, float] = {}
+    for bracket, share_pct in CPS_HOUSEHOLD_SHARES.items():
+        if bracket not in SCF_MEAN_WEALTH_BY_BRACKET_MUSD:
+            raise KeyError(f"Missing SCF wealth assumption for bracket: {bracket}")
+        hh_mn = TOTAL_HOUSEHOLDS_MILLIONS * (share_pct / 100)
+        wealth_t = hh_mn * SCF_MEAN_WEALTH_BY_BRACKET_MUSD[bracket] / 1_000.0
+        implied[bracket] = wealth_t
+
+    implied_total = sum(implied.values())
+    if implied_total <= 0:
+        raise ValueError("Implied wealth total must be positive.")
+
+    scale = CBO_TOTAL_WEALTH_TRILLIONS / implied_total
+    return {k: v * scale for k, v in implied.items()}
+
+
+def bezier_link(x0: float, y0_top: float, y0_bottom: float, x1: float, y1_top: float, y1_bottom: float) -> str:
+    c = (x1 - x0) * 0.5
+    return (
+        f"M {x0},{y0_top} "
+        f"C {x0 + c},{y0_top} {x1 - c},{y1_top} {x1},{y1_top} "
+        f"L {x1},{y1_bottom} "
+        f"C {x1 - c},{y1_bottom} {x0 + c},{y0_bottom} {x0},{y0_bottom} Z"
     implied = {}
     for bracket, share_pct in CPS_HOUSEHOLD_SHARES.items():
         hh_mn = TOTAL_HOUSEHOLDS_MILLIONS * (share_pct / 100)
@@ -57,6 +84,63 @@ def bezier_link(x0, y0_top, y0_bottom, x1, y1_top, y1_bottom):
 
 def build_html(out: Path) -> None:
     wealth = wealth_by_bracket()
+
+    # Canvas layout
+    width = 1200
+    margin_top, margin_bottom = 70, 60
+    usable_h = 620
+    left_x, right_x = 180, 850
+    bar_w = 34
+    gap = 8
+
+    total = sum(wealth.values())
+    if total <= 0:
+        raise ValueError("Total wealth must be positive.")
+
+    # Consistent flow scale on both sides preserves Sankey mass-conservation cue.
+    flow_scale = usable_h / total
+
+    # Left total bar fully consumed by flow segments.
+    total_y = margin_top
+    total_bar_h = usable_h
+
+    # Right side keeps the same segment heights; gaps are additional spacing only.
+    total_gap = gap * (len(wealth) - 1)
+    right_stack_h = usable_h + total_gap
+    height = int(margin_top + right_stack_h + margin_bottom)
+
+    parts = []
+    left_cursor = total_y
+    right_cursor = margin_top
+
+    for label, val in wealth.items():
+        h = val * flow_scale
+        left_top = left_cursor
+        left_bottom = left_top + h
+        right_top = right_cursor
+        right_bottom = right_top + h
+        pct = val / CBO_TOTAL_WEALTH_TRILLIONS * 100
+
+        parts.append(
+            {
+                "label": label,
+                "val": val,
+                "pct": pct,
+                "left_top": left_top,
+                "left_bottom": left_bottom,
+                "right_top": right_top,
+                "right_bottom": right_bottom,
+                "path": bezier_link(left_x + bar_w, left_top, left_bottom, right_x, right_top, right_bottom),
+            }
+        )
+
+        left_cursor = left_bottom
+        right_cursor = right_bottom + gap
+
+    # Numeric guardrails to catch rendering mistakes.
+    epsilon = 1e-6
+    if abs(left_cursor - (total_y + total_bar_h)) > epsilon:
+        raise RuntimeError("Left flow segments do not exactly consume the total bar height.")
     width, height = 1200, 740
     margin_top, margin_bottom = 70, 50
     usable_h = height - margin_top - margin_bottom
@@ -99,12 +183,28 @@ def build_html(out: Path) -> None:
         '<text x="40" y="36" font-family="Arial" font-size="24" font-weight="700">U.S. Wealth Distribution by Federal Income Tax Bracket</text>',
         '<text x="40" y="58" font-family="Arial" font-size="14" fill="#333">SCF (2022) + CPS ASEC (2023), calibrated to CBO total household wealth (2022 = $143T)</text>',
         f'<rect x="{left_x}" y="{total_y}" width="{bar_w}" height="{total_bar_h}" fill="#2F5597"/>',
+        f'<text x="{left_x - 10}" y="{total_y - 12}" font-family="Arial" font-size="13" text-anchor="start">Total household wealth</text>',
+        f'<text x="{left_x - 10}" y="{total_y + 6}" font-family="Arial" font-size="12" fill="#222">$143.0T</text>',
         f'<text x="{left_x-10}" y="{total_y-12}" font-family="Arial" font-size="13" text-anchor="start">Total household wealth</text>',
         f'<text x="{left_x-10}" y="{total_y+6}" font-family="Arial" font-size="12" fill="#222">$143.0T</text>',
     ]
 
     colors = ["#6BAED6", "#74C476", "#FD8D3C", "#9E9AC8", "#F768A1", "#BCBD22", "#17BECF"]
 
+    for i, p in enumerate(parts):
+        color = colors[i % len(colors)]
+        svg.append(f'<path d="{p["path"]}" fill="{color}" fill-opacity="0.45" stroke="none"/>')
+        segment_h = p["right_bottom"] - p["right_top"]
+        svg.append(
+            f'<rect x="{right_x}" y="{p["right_top"]}" width="{bar_w}" height="{max(1, segment_h)}" fill="{color}"/>'
+        )
+
+        mid = (p["right_top"] + p["right_bottom"]) / 2
+        svg.append(
+            f'<text x="{right_x + bar_w + 12}" y="{mid - 2}" font-family="Arial" font-size="12">{p["label"]}</text>'
+        )
+        svg.append(
+            f'<text x="{right_x + bar_w + 12}" y="{mid + 14}" font-family="Arial" font-size="11" fill="#333">${p["val"]:.1f}T ({p["pct"]:.1f}%)</text>'
     for i, (label, val, pct, y0, y1, path) in enumerate(parts):
         color = colors[i % len(colors)]
         svg.append(f'<path d="{path}" fill="{color}" fill-opacity="0.45" stroke="none"/>')
