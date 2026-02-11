@@ -1,43 +1,24 @@
 #!/usr/bin/env python3
-"""Build an HTML Sankey diagram for U.S. wealth distribution by tax bracket.
+"""Generate an HTML Sankey diagram for U.S. wealth by federal tax bracket.
 
-Primary data sources (latest available vintages referenced by this project):
-- Federal Reserve, Survey of Consumer Finances (SCF, 2022)
-- U.S. Census Bureau, Current Population Survey ASEC (2023)
-- Congressional Budget Office (CBO), household wealth aggregate (2022)
+Primary source links (provided by user):
+- SCF: https://www.federalreserve.gov/econres/scfindex.htm
+- CPS ASEC: https://www.census.gov/data/datasets/time-series/demo/cps/cps-asec.html
+- Aggregate wealth benchmark: https://www.federalreserve.gov/releases/z1/dataviz/dfa/distribute/chart/
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 from pathlib import Path
 from typing import NamedTuple
 
-# Approximate CPS ASEC household shares consolidated to tax-bracket-like income bins.
-CPS_HOUSEHOLD_SHARES = {
-    "10% (<= $11k)": 7.0,
-    "12% ($11k-$44,725)": 28.0,
-    "22% ($44,725-$95,375)": 29.0,
-    "24% ($95,375-$182,100)": 22.0,
-    "32% ($182,100-$231,250)": 5.0,
-    "35% ($231,250-$578,125)": 6.0,
-    "37% (>$578,125)": 3.0,
-}
-
-# SCF 2022 mean net worth assumptions for the same bins (millions of USD).
-SCF_MEAN_WEALTH_BY_BRACKET_MUSD = {
-    "10% (<= $11k)": 0.045,
-    "12% ($11k-$44,725)": 0.170,
-    "22% ($44,725-$95,375)": 0.410,
-    "24% ($95,375-$182,100)": 0.950,
-    "32% ($182,100-$231,250)": 1.450,
-    "35% ($231,250-$578,125)": 2.350,
-    "37% (>$578,125)": 9.200,
-}
-
-CBO_TOTAL_WEALTH_TRILLIONS = 143.0
-TOTAL_HOUSEHOLDS_MILLIONS = 131.0
+DEFAULT_SCF_CSV = Path("data/scf_2022_bracket_networth.csv")
+DEFAULT_CPS_CSV = Path("data/cps_asec_2023_bracket_shares.csv")
+DEFAULT_TOTAL_CSV = Path("data/cbo_total_wealth_2022.csv")
 DEFAULT_OUTPUT = Path("output/wealth_distribution_sankey.html")
+TOTAL_HOUSEHOLDS_MILLIONS = 131.0
 
 
 class Segment(NamedTuple):
@@ -51,144 +32,128 @@ class Segment(NamedTuple):
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Generate a self-contained HTML Sankey diagram."
-    )
-    parser.add_argument(
-        "--output",
-        default=str(DEFAULT_OUTPUT),
-        help=f"Output HTML file path (default: {DEFAULT_OUTPUT})",
-    )
+    parser = argparse.ArgumentParser(description="Build U.S. wealth Sankey chart HTML.")
+    parser.add_argument("--scf-csv", default=str(DEFAULT_SCF_CSV), help="SCF bracket wealth CSV")
+    parser.add_argument("--cps-csv", default=str(DEFAULT_CPS_CSV), help="CPS bracket share CSV")
+    parser.add_argument("--total-csv", default=str(DEFAULT_TOTAL_CSV), help="Aggregate wealth CSV")
+    parser.add_argument("--output", default=str(DEFAULT_OUTPUT), help="Output HTML path")
     return parser.parse_args()
 
 
-def compute_wealth_by_bracket() -> dict[str, float]:
-    if not CPS_HOUSEHOLD_SHARES:
-        raise ValueError("CPS_HOUSEHOLD_SHARES is empty.")
+def read_scf(path: Path) -> dict[str, float]:
+    out: dict[str, float] = {}
+    with path.open(newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            out[row["tax_bracket"]] = float(row["mean_net_worth_musd"])
+    if not out:
+        raise ValueError("No SCF rows loaded.")
+    return out
 
-    implied_totals: dict[str, float] = {}
-    for bracket, share_pct in CPS_HOUSEHOLD_SHARES.items():
-        if bracket not in SCF_MEAN_WEALTH_BY_BRACKET_MUSD:
-            raise KeyError(f"Missing SCF wealth assumption for bracket: {bracket}")
 
+def read_cps(path: Path) -> dict[str, float]:
+    out: dict[str, float] = {}
+    with path.open(newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            out[row["tax_bracket"]] = float(row["household_share_pct"])
+    if not out:
+        raise ValueError("No CPS rows loaded.")
+    return out
+
+
+def read_total(path: Path) -> float:
+    with path.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    if not rows:
+        raise ValueError("No total wealth rows loaded.")
+    return float(rows[-1]["total_household_wealth_trillions"])
+
+
+def compute_wealth_by_bracket(cps: dict[str, float], scf: dict[str, float], total_wealth_t: float) -> dict[str, float]:
+    implied: dict[str, float] = {}
+    for bracket, share_pct in cps.items():
+        if bracket not in scf:
+            raise KeyError(f"Missing SCF mean wealth for bracket: {bracket}")
         households_m = TOTAL_HOUSEHOLDS_MILLIONS * (share_pct / 100.0)
-        wealth_t = households_m * SCF_MEAN_WEALTH_BY_BRACKET_MUSD[bracket] / 1_000.0
-        implied_totals[bracket] = wealth_t
+        implied[bracket] = households_m * scf[bracket] / 1000.0
 
-    implied_sum = sum(implied_totals.values())
-    if implied_sum <= 0:
-        raise ValueError("Implied wealth must be positive.")
+    implied_sum = sum(implied.values())
+    if implied_sum <= 0 or total_wealth_t <= 0:
+        raise ValueError("Totals must be positive.")
 
-    calibration_scale = CBO_TOTAL_WEALTH_TRILLIONS / implied_sum
-    return {k: v * calibration_scale for k, v in implied_totals.items()}
+    scale = total_wealth_t / implied_sum
+    return {k: v * scale for k, v in implied.items()}
 
 
-def build_segments(
-    wealth_by_bracket: dict[str, float],
-    total_y: float,
-    flow_scale: float,
-    gap: float,
-) -> list[Segment]:
+def build_segments(wealth_by_bracket: dict[str, float], total_y: float, flow_scale: float, gap: float, total_wealth_t: float) -> list[Segment]:
     segments: list[Segment] = []
     left_cursor = total_y
     right_cursor = total_y
-
     for label, wealth_t in wealth_by_bracket.items():
         h = wealth_t * flow_scale
-        left_top = left_cursor
-        left_bottom = left_top + h
-        right_top = right_cursor
-        right_bottom = right_top + h
-
-        segments.append(
-            Segment(
-                label=label,
-                wealth_t=wealth_t,
-                pct_of_total=(wealth_t / CBO_TOTAL_WEALTH_TRILLIONS) * 100,
-                left_top=left_top,
-                left_bottom=left_bottom,
-                right_top=right_top,
-                right_bottom=right_bottom,
-            )
+        seg = Segment(
+            label=label,
+            wealth_t=wealth_t,
+            pct_of_total=(wealth_t / total_wealth_t) * 100,
+            left_top=left_cursor,
+            left_bottom=left_cursor + h,
+            right_top=right_cursor,
+            right_bottom=right_cursor + h,
         )
-
-        left_cursor = left_bottom
-        right_cursor = right_bottom + gap
-
+        segments.append(seg)
+        left_cursor = seg.left_bottom
+        right_cursor = seg.right_bottom + gap
     return segments
 
 
-def bezier_link(segment: Segment, x0: float, x1: float) -> str:
+def bezier_link(seg: Segment, x0: float, x1: float) -> str:
     c = (x1 - x0) * 0.5
     return (
-        f"M {x0},{segment.left_top} "
-        f"C {x0 + c},{segment.left_top} {x1 - c},{segment.right_top} {x1},{segment.right_top} "
-        f"L {x1},{segment.right_bottom} "
-        f"C {x1 - c},{segment.right_bottom} {x0 + c},{segment.left_bottom} {x0},{segment.left_bottom} Z"
+        f"M {x0},{seg.left_top} "
+        f"C {x0 + c},{seg.left_top} {x1 - c},{seg.right_top} {x1},{seg.right_top} "
+        f"L {x1},{seg.right_bottom} "
+        f"C {x1 - c},{seg.right_bottom} {x0 + c},{seg.left_bottom} {x0},{seg.left_bottom} Z"
     )
 
 
-def build_html_document() -> str:
-    wealth = compute_wealth_by_bracket()
-    total_wealth = sum(wealth.values())
-    if total_wealth <= 0:
-        raise ValueError("Total calibrated wealth must be positive.")
-
+def build_html_document(wealth: dict[str, float], total_wealth_t: float) -> str:
     width = 1200
-    left_x = 180
-    right_x = 850
+    left_x, right_x = 180, 850
     bar_w = 34
     total_y = 70
     usable_h = 620
     margin_bottom = 60
     gap = 8
 
-    flow_scale = usable_h / total_wealth
-    segments = build_segments(wealth, total_y=total_y, flow_scale=flow_scale, gap=gap)
-
-    # Verify left-side mass conservation exactly matches total bar height.
-    epsilon = 1e-6
-    if segments and abs(segments[-1].left_bottom - (total_y + usable_h)) > epsilon:
-        raise RuntimeError("Flow thickness does not conserve mass on the left bar.")
+    flow_scale = usable_h / total_wealth_t
+    segments = build_segments(wealth, total_y, flow_scale, gap, total_wealth_t)
+    if segments and abs(segments[-1].left_bottom - (total_y + usable_h)) > 1e-6:
+        raise RuntimeError("Mass-conservation check failed on left bar.")
 
     total_gap = gap * (len(segments) - 1)
-    right_stack_h = usable_h + total_gap
-    height = int(total_y + right_stack_h + margin_bottom)
+    height = int(total_y + usable_h + total_gap + margin_bottom)
 
     colors = ["#6BAED6", "#74C476", "#FD8D3C", "#9E9AC8", "#F768A1", "#BCBD22", "#17BECF"]
 
-    svg_parts = [
+    parts = [
         f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">',
         '<rect x="0" y="0" width="100%" height="100%" fill="#ffffff"/>',
         '<text x="40" y="36" font-family="Arial" font-size="24" font-weight="700">U.S. Wealth Distribution by Federal Income Tax Bracket</text>',
-        (
-            '<text x="40" y="58" font-family="Arial" font-size="14" fill="#333">'
-            f'SCF (2022) + CPS ASEC (2023), calibrated to CBO total household wealth '
-            f'(2022 = ${CBO_TOTAL_WEALTH_TRILLIONS:.1f}T)</text>'
-        ),
+        f'<text x="40" y="58" font-family="Arial" font-size="14" fill="#333">SCF + CPS calibrated to aggregate wealth benchmark (${total_wealth_t:.1f}T)</text>',
         f'<rect x="{left_x}" y="{total_y}" width="{bar_w}" height="{usable_h}" fill="#2F5597"/>',
         f'<text x="{left_x - 10}" y="{total_y - 12}" font-family="Arial" font-size="13">Total household wealth</text>',
-        f'<text x="{left_x - 10}" y="{total_y + 6}" font-family="Arial" font-size="12" fill="#222">${total_wealth:.1f}T</text>',
+        f'<text x="{left_x - 10}" y="{total_y + 6}" font-family="Arial" font-size="12" fill="#222">${total_wealth_t:.1f}T</text>',
     ]
 
-    for i, segment in enumerate(segments):
+    for i, seg in enumerate(segments):
         color = colors[i % len(colors)]
-        path = bezier_link(segment, x0=left_x + bar_w, x1=right_x)
-        seg_h = segment.right_bottom - segment.right_top
-        mid_y = (segment.right_top + segment.right_bottom) / 2
+        parts.append(f'<path d="{bezier_link(seg, left_x + bar_w, right_x)}" fill="{color}" fill-opacity="0.45" stroke="none"/>')
+        h = seg.right_bottom - seg.right_top
+        mid = (seg.right_top + seg.right_bottom) / 2
+        parts.append(f'<rect x="{right_x}" y="{seg.right_top}" width="{bar_w}" height="{max(1.0, h)}" fill="{color}"/>')
+        parts.append(f'<text x="{right_x + bar_w + 12}" y="{mid - 2}" font-family="Arial" font-size="12">{seg.label}</text>')
+        parts.append(f'<text x="{right_x + bar_w + 12}" y="{mid + 14}" font-family="Arial" font-size="11" fill="#333">${seg.wealth_t:.1f}T ({seg.pct_of_total:.1f}%)</text>')
 
-        svg_parts.append(f'<path d="{path}" fill="{color}" fill-opacity="0.45" stroke="none"/>')
-        svg_parts.append(
-            f'<rect x="{right_x}" y="{segment.right_top}" width="{bar_w}" height="{max(1.0, seg_h)}" fill="{color}"/>'
-        )
-        svg_parts.append(
-            f'<text x="{right_x + bar_w + 12}" y="{mid_y - 2}" font-family="Arial" font-size="12">{segment.label}</text>'
-        )
-        svg_parts.append(
-            f'<text x="{right_x + bar_w + 12}" y="{mid_y + 14}" font-family="Arial" font-size="11" fill="#333">${segment.wealth_t:.1f}T ({segment.pct_of_total:.1f}%)</text>'
-        )
-
-    svg_parts.append("</svg>")
+    parts.append("</svg>")
 
     return f"""<!doctype html>
 <html lang=\"en\">
@@ -196,30 +161,32 @@ def build_html_document() -> str:
   <meta charset=\"utf-8\" />
   <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />
   <title>US Wealth Sankey</title>
-  <style>
-    body {{ margin: 0; font-family: Arial, sans-serif; background: #f9fafb; }}
-    .wrap {{ padding: 18px; }}
-  </style>
+  <style>body {{ margin: 0; font-family: Arial, sans-serif; background: #f9fafb; }} .wrap {{ padding: 18px; }}</style>
 </head>
 <body>
-  <div class=\"wrap\">{''.join(svg_parts)}</div>
+<div class=\"wrap\">{''.join(parts)}</div>
 </body>
 </html>
 """
 
 
-def write_html(output_path: Path) -> None:
-    html = build_html_document()
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(html, encoding="utf-8")
-
-
 def main() -> int:
     args = parse_args()
+    scf = read_scf(Path(args.scf_csv))
+    cps = read_cps(Path(args.cps_csv))
+    total = read_total(Path(args.total_csv))
+    wealth = compute_wealth_by_bracket(cps=cps, scf=scf, total_wealth_t=total)
+
+    html = build_html_document(wealth=wealth, total_wealth_t=total)
     out = Path(args.output)
-    write_html(out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html, encoding="utf-8")
+
     print(f"Wrote {out}")
-    print("Run as: python3 create_wealth_sankey.py")
+    print("Input files:")
+    print(f"- SCF: {args.scf_csv}")
+    print(f"- CPS: {args.cps_csv}")
+    print(f"- Total wealth: {args.total_csv}")
     return 0
 
 
