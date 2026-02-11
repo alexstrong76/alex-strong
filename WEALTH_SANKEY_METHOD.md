@@ -20,8 +20,16 @@ from CSV inputs and source links provided by the user.
 
 ## Run
 
+You can run from the repository root:
+
 ```bash
 python3 create_wealth_sankey.py
+```
+
+or from any directory by using an absolute path to the script:
+
+```bash
+python3 /workspace/alex-strong/create_wealth_sankey.py
 ```
 
 Optional custom input/output paths:
@@ -48,6 +56,7 @@ python3 create_wealth_sankey.py \
 - Missing bracket mapping check (`CPS` bracket exists in `SCF`).
 - Positive-total checks before scaling.
 - Left-bar mass-conservation check to ensure full source bar allocation.
+- Robust path resolution for input CSVs (works from non-repo working directories).
 
 ## Note
 

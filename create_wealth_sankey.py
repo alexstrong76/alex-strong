@@ -14,10 +14,11 @@ import csv
 from pathlib import Path
 from typing import NamedTuple
 
-DEFAULT_SCF_CSV = Path("data/scf_2022_bracket_networth.csv")
-DEFAULT_CPS_CSV = Path("data/cps_asec_2023_bracket_shares.csv")
-DEFAULT_TOTAL_CSV = Path("data/cbo_total_wealth_2022.csv")
-DEFAULT_OUTPUT = Path("output/wealth_distribution_sankey.html")
+SCRIPT_DIR = Path(__file__).resolve().parent
+DEFAULT_SCF_CSV = SCRIPT_DIR / "data/scf_2022_bracket_networth.csv"
+DEFAULT_CPS_CSV = SCRIPT_DIR / "data/cps_asec_2023_bracket_shares.csv"
+DEFAULT_TOTAL_CSV = SCRIPT_DIR / "data/cbo_total_wealth_2022.csv"
+DEFAULT_OUTPUT = SCRIPT_DIR / "output/wealth_distribution_sankey.html"
 TOTAL_HOUSEHOLDS_MILLIONS = 131.0
 
 
@@ -38,6 +39,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--total-csv", default=str(DEFAULT_TOTAL_CSV), help="Aggregate wealth CSV")
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT), help="Output HTML path")
     return parser.parse_args()
+
+
+def resolve_existing_input(path_like: str) -> Path:
+    """Resolve an input path robustly for users running from any working directory."""
+    p = Path(path_like).expanduser()
+    candidates = [p, (SCRIPT_DIR / p if not p.is_absolute() else p)]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate.resolve()
+    raise FileNotFoundError(
+        f"Input file not found: {path_like}. Tried: "
+        + ", ".join(str(c.resolve()) for c in candidates)
+    )
+
+
+def resolve_output(path_like: str) -> Path:
+    p = Path(path_like).expanduser()
+    if p.is_absolute():
+        return p
+    # Keep relative output behavior intuitive (relative to current working directory).
+    return Path.cwd() / p
 
 
 def read_scf(path: Path) -> dict[str, float]:
@@ -172,21 +194,25 @@ def build_html_document(wealth: dict[str, float], total_wealth_t: float) -> str:
 
 def main() -> int:
     args = parse_args()
-    scf = read_scf(Path(args.scf_csv))
-    cps = read_cps(Path(args.cps_csv))
-    total = read_total(Path(args.total_csv))
+    scf_path = resolve_existing_input(args.scf_csv)
+    cps_path = resolve_existing_input(args.cps_csv)
+    total_path = resolve_existing_input(args.total_csv)
+
+    scf = read_scf(scf_path)
+    cps = read_cps(cps_path)
+    total = read_total(total_path)
     wealth = compute_wealth_by_bracket(cps=cps, scf=scf, total_wealth_t=total)
 
     html = build_html_document(wealth=wealth, total_wealth_t=total)
-    out = Path(args.output)
+    out = resolve_output(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(html, encoding="utf-8")
 
     print(f"Wrote {out}")
     print("Input files:")
-    print(f"- SCF: {args.scf_csv}")
-    print(f"- CPS: {args.cps_csv}")
-    print(f"- Total wealth: {args.total_csv}")
+    print(f"- SCF: {scf_path}")
+    print(f"- CPS: {cps_path}")
+    print(f"- Total wealth: {total_path}")
     return 0
 
 
