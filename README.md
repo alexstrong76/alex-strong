@@ -16,14 +16,18 @@
 
 ### About Me  
 
-I’m an **economics researcher and data analyst** passionate about connecting quantitative methods, policy, and technology to solve real-world problems.  
-My work bridges **academic economics**, **labor market research**, and **data-driven policy analysis** — using data science to make insights accessible, reproducible, and impactful.
+Applied economist and quantitative analyst with 7 years of professional experience
+in causal inference, predictive modeling, and time-series forecasting.
 
-- **Background:** Economics, data analytics, and international affairs  
-- **Focus Areas:** Econometrics, labor economics, compliance analytics, and applied data science  
-- **Skills:** Python, pandas, NumPy, scikit-learn, statsmodels, SQL, Tableau, Power BI  
-- **Mission:** Empower organizations and policymakers through transparent, evidence-based insights  
+Former U.S. Bureau of Labor Statistics economist. M.A. Economics, American University.
 
+- **Specialties:** Econometrics, causal inference (DiD, RD design, IV), 
+  Bayesian inference, ARIMA/VAR/GARCH, machine learning
+- **Languages:** Python, R, SQL
+- **Tools:** statsmodels, scikit-learn, PyTorch, Tableau, Power BI
+- **Domains:** Labor economics, compliance analytics, applied forecasting, 
+  policy evaluation
+  
 ---
 
 ### Featured Project  
@@ -41,7 +45,7 @@ Includes Solow growth modeling, CES demand estimation, wage-gap regressions, syn
 - Developing **synthetic labor market and compliance datasets** for open policy research  
 - Applying **machine learning** and causal inference to economic and social data  
 - Building reproducible workflows for policy analytics and visualization  
-- Expanding public-facing resources on **applied econometrics and data ethics**
+- Expanding public-facing resources on **applied econometrics and operational time series work**
 
 ---
 
