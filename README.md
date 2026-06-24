@@ -2,7 +2,7 @@
 
 # Hi, I'm Alex Strong
 
-![Profile Views](https://komarev.com/ghpvc/?username=alexstrong76&style=flat-square)
+![Profile Views](https://komarev.com/ghpvc/?username=alexandrastrong&style=flat-square)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)
 ![Economics](https://img.shields.io/badge/Focus-Economics%20%26%20Data%20Science-green.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
@@ -23,7 +23,7 @@ Applied economist and quantitative analyst with seven years of professional expe
 
 ## 📂 Featured Project
 
-### [Economics & Analytics Portfolio](https://github.com/alexstrong76/alex-strong-econ-analytics-portfolio)
+### [Economics & Analytics Portfolio](https://github.com/alexandrastrong/alex-strong-econ-analytics-portfolio)
 
 A collection of open-source projects integrating macroeconomic and microeconomic modeling, econometrics, and labor policy analysis. Includes difference-in-differences policy evaluation, Bayesian inference, ARIMA/VAR/GARCH time-series modeling, credit risk scorecard development, and labor market analytics.
 
@@ -54,8 +54,8 @@ A collection of open-source projects integrating macroeconomic and microeconomic
 
 ## 📊 GitHub Stats
 
-![Alex's GitHub Stats](https://github-readme-stats.vercel.app/api?username=alexstrong76&show_icons=true&theme=default)
-![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=alexstrong76&layout=compact&theme=default)
+![Alex's GitHub Stats](https://github-readme-stats.vercel.app/api?username=alexandrastrong&show_icons=true&theme=default)
+![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=alexandrastrong&layout=compact&theme=default)
 
 ---
 
