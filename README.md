@@ -1,100 +1,76 @@
-<!-- ============================= -->
 <!-- GITHUB PROFILE README — Alex Strong -->
-<!-- ============================= -->
 
-# Hi, I’m Alex Strong  
+# Hi, I'm Alex Strong
 
-![Profile Views](https://komarev.com/ghpvc/?username=alex-strong&style=flat-square)
+![Profile Views](https://komarev.com/ghpvc/?username=alexstrong76&style=flat-square)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)
 ![Economics](https://img.shields.io/badge/Focus-Economics%20%26%20Data%20Science-green.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
-![Made with Jupyter](https://img.shields.io/badge/Made%20with-Jupyter-orange.svg)
-![Black](https://img.shields.io/badge/Code%20Style-Black-black.svg)
 ![Open Source](https://img.shields.io/badge/Open%20Source-Contributions%20Welcome-brightgreen.svg)
 
 ---
 
-### About Me  
+**Economist · Quantitative Analyst · Former BLS Economist**
 
-Applied economist and quantitative analyst with 7 years of professional experience
-in causal inference, predictive modeling, and time-series forecasting.
+Applied economist and quantitative analyst with seven years of professional experience in causal inference, predictive modeling, and time-series forecasting. Former U.S. Bureau of Labor Statistics Economist. M.A. Economics, American University.
 
-Former U.S. Bureau of Labor Statistics economist. M.A. Economics, American University.
-
-- **Specialties:** Econometrics, causal inference (DiD, RD design, IV), 
-  Bayesian inference, ARIMA/VAR/GARCH, machine learning
-- **Languages:** Python, R, SQL
-- **Tools:** statsmodels, scikit-learn, PyTorch, Tableau, Power BI
-- **Domains:** Labor economics, compliance analytics, applied forecasting, 
-  policy evaluation
-  
----
-
-### Featured Project  
-
-#### [Economics & Analytics Portfolio](https://github.com/alex-strong/alex-strong-econ-analytics-portfolio)
-A collection of open-source Python projects integrating **macroeconomic and microeconomic modeling**, **econometrics**, and **labor policy analysis**.  
-Includes Solow growth modeling, CES demand estimation, wage-gap regressions, synthetic FLSA wage-hour audits, and mock BLS datasets for visualization.  
-
-> *Built with:* Python, pandas, NumPy, scikit-learn, statsmodels, matplotlib, Jupyter  
+- **Specialties:** Econometrics · Causal Inference (DiD, RDD, IV) · Bayesian Inference · ARIMA/VAR/GARCH · Machine Learning · Program Evaluation
+- **Languages:** Python · R · SQL · SAS · Stata
+- **Tools:** pandas · NumPy · scikit-learn · statsmodels · PyTorch · Tableau · Power BI
+- **Domains:** Labor Economics · Compliance Analytics · Applied Forecasting · Policy Evaluation · Public Finance
 
 ---
 
-### Current Focus  
+## 📂 Featured Project
 
-- Developing **synthetic labor market and compliance datasets** for open policy research  
-- Applying **machine learning** and causal inference to economic and social data  
-- Building reproducible workflows for policy analytics and visualization  
-- Expanding public-facing resources on **applied econometrics and operational time series work**
+### [Economics & Analytics Portfolio](https://github.com/alexstrong76/alex-strong-econ-analytics-portfolio)
 
----
+A collection of open-source projects integrating macroeconomic and microeconomic modeling, econometrics, and labor policy analysis. Includes difference-in-differences policy evaluation, Bayesian inference, ARIMA/VAR/GARCH time-series modeling, credit risk scorecard development, and labor market analytics.
 
-### Tools & Technologies  
-
-| Category | Tools |
-|-----------|-------|
-| **Languages** | Python, SQL, R |
-| **Libraries** | pandas, NumPy, scikit-learn, statsmodels, matplotlib, seaborn |
-| **Data** | BLS, BEA, Census, synthetic datasets |
-| **BI & Viz** | Tableau, Power BI |
-| **Workflow** | Git, Jupyter, Makefile automation, pre-commit hooks |
+**Built with:** Python · R · pandas · NumPy · scikit-learn · statsmodels · matplotlib · Jupyter
 
 ---
 
-### Recent Highlights  
+## 🔭 Current Focus
 
-- **Data analytics projects** integrating econometrics and policy insights  
-- Designed **compliance audit simulation** inspired by Department of Labor wage data  
-- Built **synthetic BLS-style datasets** for visualization and forecasting exercises  
-- Contributing to open economics education and reproducible research best practices  
-
----
-
-### Let’s Connect  
-
-- **strong.nalex@gmail.com**  
-- [GitHub Profile](https://github.com/alexstrong76/alex-strong)  
-- [LinkedIn](https://linkedin.com/in/alex-s-b049a4390)  
+- Applying causal inference and machine learning to economic and social policy data
+- Building reproducible workflows for policy analytics and economic visualization
+- Developing synthetic labor market and compliance datasets for open research
+- Expanding applied econometrics resources for public use
 
 ---
 
-### Fun Fact  
+## 🛠️ Tools & Technologies
 
-I’m a huge dog person and love exploring the outdoors with my Great Dane and Chocolate Lab. Hiking, camping, and discovering new trails with them are some of my favorite ways to recharge.
+| **Category** | **Tools** |
+|---|---|
+| Languages | Python · R · SQL · SAS · Stata |
+| Libraries | pandas · NumPy · scikit-learn · statsmodels · matplotlib · seaborn |
+| Data Sources | BLS · BEA · Census · FRED · synthetic datasets |
+| BI & Visualization | Tableau · Power BI · ggplot2 |
+| Workflow | Git · Jupyter · Makefile automation |
 
 ---
 
-### GitHub Stats  
+## 📊 GitHub Stats
 
-![Alex's GitHub Stats](https://github-readme-stats.vercel.app/api?username=alexstrong76&show_icons=true&theme=default)  
+![Alex's GitHub Stats](https://github-readme-stats.vercel.app/api?username=alexstrong76&show_icons=true&theme=default)
 ![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=alexstrong76&layout=compact&theme=default)
 
 ---
 
-### License  
+## 📬 Let's Connect
 
-All projects are open-source under the MIT License.  
-For questions, collaborations, or other opportunities, feel free to reach out — I’d love to connect!
+- 📧 alex.strong76@proton.me
+- 💼 [LinkedIn](https://www.linkedin.com/in/alex-s-b049a4390)
+- 📍 Dallas-Fort Worth, TX — open to remote roles nationally
 
 ---
 
+## 🐾 A Bit More
+
+Big dog person. My Great Dane keeps me honest about priorities. Hiking and trail time are how I reset.
+
+---
+
+*All portfolio projects are open-source under the MIT License. Feel free to reach out for questions, collaborations, or opportunities.*
