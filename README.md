@@ -61,7 +61,7 @@ A collection of open-source projects integrating macroeconomic and microeconomic
 
 ## 📬 Let's Connect
 
-- 📧 alex.strong76@proton.me
+- 📧 alex.strong.econ@gmail.com
 - 💼 [LinkedIn](https://www.linkedin.com/in/alex-s-b049a4390)
 - 📍 Dallas-Fort Worth, TX — open to remote roles nationally
 
