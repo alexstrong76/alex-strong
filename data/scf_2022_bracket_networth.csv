@@ -1,0 +1,8 @@
+source,year,tax_bracket,mean_net_worth_musd
+https://www.federalreserve.gov/econres/scfindex.htm,2022,"10% (<= $11k)",0.045
+https://www.federalreserve.gov/econres/scfindex.htm,2022,"12% ($11k-$44,725)",0.170
+https://www.federalreserve.gov/econres/scfindex.htm,2022,"22% ($44,725-$95,375)",0.410
+https://www.federalreserve.gov/econres/scfindex.htm,2022,"24% ($95,375-$182,100)",0.950
+https://www.federalreserve.gov/econres/scfindex.htm,2022,"32% ($182,100-$231,250)",1.450
+https://www.federalreserve.gov/econres/scfindex.htm,2022,"35% ($231,250-$578,125)",2.350
+https://www.federalreserve.gov/econres/scfindex.htm,2022,"37% (>$578,125)",9.200

@@ -1,0 +1,8 @@
+source,year,tax_bracket,household_share_pct
+https://www.census.gov/data/datasets/time-series/demo/cps/cps-asec.html,2023,"10% (<= $11k)",7.0
+https://www.census.gov/data/datasets/time-series/demo/cps/cps-asec.html,2023,"12% ($11k-$44,725)",28.0
+https://www.census.gov/data/datasets/time-series/demo/cps/cps-asec.html,2023,"22% ($44,725-$95,375)",29.0
+https://www.census.gov/data/datasets/time-series/demo/cps/cps-asec.html,2023,"24% ($95,375-$182,100)",22.0
+https://www.census.gov/data/datasets/time-series/demo/cps/cps-asec.html,2023,"32% ($182,100-$231,250)",5.0
+https://www.census.gov/data/datasets/time-series/demo/cps/cps-asec.html,2023,"35% ($231,250-$578,125)",6.0
+https://www.census.gov/data/datasets/time-series/demo/cps/cps-asec.html,2023,"37% (>$578,125)",3.0
